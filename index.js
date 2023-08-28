@@ -53,26 +53,30 @@ app.post('/upload',upload.single('mergedPdf'), async (req,res) => {
 
   console.log(typeof req.body)
 
-  // await s3.putObject({
-  //   Body: req.file.buffer,,
-  //   Bucket: process.env.BUCKET,
-  //   Key: filename,
-  // }).promise()
-  const params = {
+  let link =await s3.putObject({
+    Body: req.file.buffer,
     Bucket: process.env.BUCKET,
     Key: filename,
-    Body: req.file.buffer,
-  };
+  }).promise()
 
-  s3.upload(params, (error, data) => {
-    if (error) {
-      console.error('Error uploading to S3:', error);
-      return res.status(500).json({ error: 'Error uploading to S3' });
-    }
+  res.set('Content-type', 'text/plain')
+  res.send({link}).end()
 
-    const uploadedLink = data.Location;
-    res.json({ link: uploadedLink });
-  })
+  // const params = {
+  //   Bucket: process.env.BUCKET,
+  //   Key: filename,
+  //   Body: req.file.buffer,
+  // };
+
+  // s3.upload(params, (error, data) => {
+  //   if (error) {
+  //     console.error('Error uploading to S3:', error);
+  //     return res.status(500).json({ error: 'Error uploading to S3' });
+  //   }
+
+  //   const uploadedLink = data.Location;
+  //   res.json({ link: uploadedLink });
+  // })
   
 })
 

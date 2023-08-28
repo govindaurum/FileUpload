@@ -2,9 +2,14 @@ const express = require('express');
 
 const app =express();
 const dotenv =require('dotenv')
+const { v4: uuidv4 } = require('uuid');
+const multer = require('multer');
 dotenv.config()
 
 const cors =require('cors')
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(cors())
 
@@ -39,19 +44,36 @@ app.get('*', async (req,res) => {
 
 
 // curl -i -XPUT --data '{"k1":"value 1", "k2": "value 2"}' -H 'Content-type: application/json' https://some-app.cyclic.app/myFile.txt
-app.put('*', async (req,res) => {
-  let filename = req.path.slice(1)
+app.post('/upload',upload.single('mergedPdf'), async (req,res) => {
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No merged PDF file uploaded' });
+  }
+  let filename = `${uuidv4()}.pdf`;
 
   console.log(typeof req.body)
 
-  await s3.putObject({
-    Body: JSON.stringify(req.body),
+  // await s3.putObject({
+  //   Body: req.file.buffer,,
+  //   Bucket: process.env.BUCKET,
+  //   Key: filename,
+  // }).promise()
+  const params = {
     Bucket: process.env.BUCKET,
     Key: filename,
-  }).promise()
+    Body: req.file.buffer,
+  };
 
-  res.set('Content-type', 'text/plain')
-  res.send('ok').end()
+  s3.upload(params, (error, data) => {
+    if (error) {
+      console.error('Error uploading to S3:', error);
+      return res.status(500).json({ error: 'Error uploading to S3' });
+    }
+
+    const uploadedLink = data.Location;
+    res.json({ link: uploadedLink });
+  })
+  
 })
 
 // curl -i -XDELETE https://some-app.cyclic.app/myFile.txt

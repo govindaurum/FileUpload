@@ -44,39 +44,30 @@ app.get('*', async (req,res) => {
 
 
 // curl -i -XPUT --data '{"k1":"value 1", "k2": "value 2"}' -H 'Content-type: application/json' https://some-app.cyclic.app/myFile.txt
-app.post('/upload',upload.single('mergedPdf'), async (req,res) => {
+app.post('/upload',upload.single('image'), async (req,res) => {
 
   if (!req.file) {
-    return res.status(400).json({ error: 'No merged PDF file uploaded' });
+    return res.status(400).json({ error: 'No image file uploaded' });
   }
-  let filename = `${uuidv4()}.pdf`;
 
-  console.log(typeof req.body)
+  const fileName = `${uuidv4()}.jpg`; // Change the extension if needed
+  
 
-  let link =await s3.putObject({
-    Body: req.file.buffer,
+  const params = {
     Bucket: process.env.BUCKET,
-    Key: filename,
-  }).promise()
+    Key: fileName,
+    Body: req.file.buffer,
+  };
 
-  res.set('Content-type', 'text/plain')
-  res.send({link}).end()
+  s3.upload(params, (error, data) => {
+    if (error) {
+      console.error('Error uploading to S3:', error);
+      return res.status(500).json({ error: 'Error uploading to S3' });
+    }
 
-  // const params = {
-  //   Bucket: process.env.BUCKET,
-  //   Key: filename,
-  //   Body: req.file.buffer,
-  // };
-
-  // s3.upload(params, (error, data) => {
-  //   if (error) {
-  //     console.error('Error uploading to S3:', error);
-  //     return res.status(500).json({ error: 'Error uploading to S3' });
-  //   }
-
-  //   const uploadedLink = data.Location;
-  //   res.json({ link: uploadedLink });
-  // })
+    const uploadedLink = data.Location;
+    res.json({ link: uploadedLink });
+  })
   
 })
 

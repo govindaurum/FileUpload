@@ -46,6 +46,39 @@ listObjects(bucketName)
   });
 
 
+  async function getObject(bucketName, objectKey, localFilePath) {
+    const params = {
+      Bucket: bucketName,
+      Key: objectKey,
+    };
+  
+    try {
+      const response = await s3.getObject(params).promise();
+      fs.writeFileSync(localFilePath, response.Body);
+      console.log(`Object '${objectKey}' downloaded to ${localFilePath}`);
+    } catch (error) {
+      console.error('Error downloading object:', error);
+      throw error;
+    }
+  }
+  
+  // Usage
+ // Replace with your bucket name
+  const objectKey = 'ab0e7c68-6fcc-47db-b230-8a55e36434e7.jpg'; // Replace with the image's S3 object key
+  const localFilePath = '/downloaded-image.jpg'; // Local file path to save the downloaded image
+  getObject(bucketName, objectKey, localFilePath)
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  
+  
+  
+  
+  
+  
+  
+
+
 // curl -i https://some-app.cyclic.app/myFile.txt
 app.get('*', async (req,res) => {
   let filename = req.path.slice(1)

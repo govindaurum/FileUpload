@@ -19,6 +19,33 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json())
 
+
+async function listObjects(bucketName) {
+  const params = { Bucket: bucketName };
+
+  try {
+    const response = await s3.listObjectsV2(params).promise();
+    return response.Contents;
+  } catch (error) {
+    console.error('Error listing objects:', error);
+    throw error;
+  }
+}
+
+// Usage
+const bucketName = process.env.BUCKET; // Replace with your bucket name
+listObjects(bucketName)
+  .then((objects) => {
+    console.log('Objects in the bucket:');
+    objects.forEach((object) => {
+      console.log(object.Key);
+    });
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+
 // curl -i https://some-app.cyclic.app/myFile.txt
 app.get('*', async (req,res) => {
   let filename = req.path.slice(1)

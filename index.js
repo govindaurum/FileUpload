@@ -66,7 +66,7 @@ listObjects(bucketName)
   // Usage
  // Replace with your bucket name
   const objectKey = 'ab0e7c68-6fcc-47db-b230-8a55e36434e7.jpg'; // Replace with the image's S3 object key
-  const localFilePath = '/downloaded-image.jpg'; // Local file path to save the downloaded image
+  const localFilePath = 'C:/react projects/ab0e7c68-6fcc-47db-b230-8a55e36434e7.jpg'; // Local file path to save the downloaded image
   getObject(bucketName, objectKey, localFilePath)
     .catch((error) => {
       console.error('Error:', error);

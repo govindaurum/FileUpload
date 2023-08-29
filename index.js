@@ -1,9 +1,10 @@
 const express = require('express');
-
+const fs =require('fs')
 const app =express();
 const dotenv =require('dotenv')
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
+const fs = require('@cyclic.sh/s3fs') 
 dotenv.config()
 
 const cors =require('cors')

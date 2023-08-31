@@ -8,7 +8,7 @@ const fs = require('@cyclic.sh/s3fs')
 const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { S3Client, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
-const router =express.Router();
+// const router =express.Router();
 dotenv.config()
 
 const cors =require('cors')
@@ -94,7 +94,7 @@ const s3 = new S3Client({ region:REGION });
 
     app.use(bodyParser.json())
     
-    router.post("/presigned", async (req, res) => {
+    app.post("/presigned", async (req, res) => {
         const file_name = req.body.name
         const file_type = req.body.type
         const { url, fields } = await createPresignedPost(s3, {
@@ -111,7 +111,7 @@ const s3 = new S3Client({ region:REGION });
       }); 
     }); 
     
-    router.post("/download", async (req, res) => {
+    app.post("/download", async (req, res) => {
         let key = req.body.Key
         let download_url = await getSignedUrl(s3, new GetObjectCommand({
                 Bucket: process.env.BUCKET,
@@ -121,7 +121,7 @@ const s3 = new S3Client({ region:REGION });
         return res.send({download_url});
     });
     
-    router.post("/delete", async (req, res) => {
+    app.post("/delete", async (req, res) => {
         let key = req.body.Key
         let result = await s3.send(new DeleteObjectCommand({
                 Bucket: process.env.BUCKET,
@@ -130,7 +130,7 @@ const s3 = new S3Client({ region:REGION });
         return res.send({result});
     });
     
-    router.get("/list_uploads", async (req, res) => {
+    app.get("/list_uploads", async (req, res) => {
         let bucket_data = await s3.send(new ListObjectsV2Command({
             Bucket: process.env.BUCKET,
             Prefix: 'uploads'
@@ -140,7 +140,7 @@ const s3 = new S3Client({ region:REGION });
         return res.json(bucket_contents);
     });
     
-    router.get("/list_uploads/presigned", async (req, res) => {
+    app.get("/list_uploads/presigned", async (req, res) => {
         let bucket_data = await s3.send(new ListObjectsV2Command({
             Bucket: process.env.BUCKET,
             Prefix: 'uploads'

@@ -5,6 +5,9 @@ const dotenv =require('dotenv')
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const fs = require('@cyclic.sh/s3fs') 
+const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { S3Client, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 dotenv.config()
 
 const cors =require('cors')
@@ -78,9 +81,7 @@ const bodyParser = require('body-parser');
 
 
 
-const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { S3Client, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });

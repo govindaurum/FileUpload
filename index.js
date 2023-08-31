@@ -8,9 +8,8 @@ const fs = require('@cyclic.sh/s3fs')
 dotenv.config()
 
 const cors =require('cors')
+app.use(cors())
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 
 // const AWS = require("aws-sdk");
@@ -21,13 +20,13 @@ const bodyParser = require('body-parser');
 
 
 // async function listObjects(bucketName) {
-//   const params = { Bucket: bucketName };
+  //   const params = { Bucket: bucketName };
 
 //   try {
-//     const response = await s3.listObjectsV2(params).promise();
+  //     const response = await s3.listObjectsV2(params).promise();
 //     return response.Contents;
 //   } catch (error) {
-//     console.error('Error listing objects:', error);
+  //     console.error('Error listing objects:', error);
 //     throw error;
 //   }
 // }
@@ -47,19 +46,19 @@ const bodyParser = require('body-parser');
 
     
     //   async function getObject(bucketName, objectKey, localFilePath) {
-//     const params = {
-  //       Bucket: bucketName,
+      //     const params = {
+        //       Bucket: bucketName,
   //       Key: objectKey,
   //     };
   
   //     try {
-//       const response = await s3.getObject(params).promise();
+    //       const response = await s3.getObject(params).promise();
 //       fs.writeFileSync(localFilePath, response.Body);
 //       console.log(`Object '${objectKey}' downloaded to ${localFilePath}`);
 //     } catch (error) {
-//       console.error('Error downloading object:', error);
-//       throw error;
-//     }
+  //       console.error('Error downloading object:', error);
+  //       throw error;
+  //     }
 //   }
 
 //   // Usage
@@ -68,7 +67,7 @@ const bodyParser = require('body-parser');
 //   const localFilePath = 'C:/react projects/ab0e7c68-6fcc-47db-b230-8a55e36434e7.jpg'; // Local file path to save the downloaded image
 //   getObject(bucketName, objectKey, localFilePath)
 //     .catch((error) => {
-//       console.error('Error:', error);
+  //       console.error('Error:', error);
 //     });
 
 
@@ -83,13 +82,14 @@ const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { S3Client, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 const BUCKET_NAME = "cyclic-fair-ruby-clam-cuff-us-east-1";
 
 const REGION = "us-east-2";
 
 const s3 = new S3Client({ region:REGION });
 
-app.use(cors())
     app.use(bodyParser.json())
     
     router.post("/presigned", async (req, res) => {

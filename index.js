@@ -5,6 +5,7 @@ const dotenv =require('dotenv')
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const fs = require('@cyclic.sh/s3fs') 
+const { PDFDocument } = require('pdf-lib');
 const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { S3Client, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
@@ -93,9 +94,49 @@ const REGION = "us-east-2";
 const s3 = new S3Client({ region:REGION });
 
     app.use(bodyParser.json())
+
     
-    app.post("/presigned",  async (req, res) => {
-      console.log("body jof presigned url=====>",req.body)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post('/mergepdf', upload.array('pdf'), async (req, res) => {
+  try {
+    const pdfs = req.files;
+
+    if (!pdfs || pdfs.length < 2) {
+      return res.status(400).json({ error: 'Please upload at least two PDF files to merge.' });
+    }
+
+    const mergedPdf = await mergePDFs(pdfs);
+    
+
+      // Set the response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="merged.pdf"');
+  
+      // Send the merged PDF as a response
+      res.send(mergedPdf);
+  } catch (error) {
+    console.error('Error merging PDFs:', error);
+    return res.status(500).json({ error: 'Error merging PDFs.' });
+  }
+});
+
+async function mergePDFs(pdfs) {
+  const mergedPdf = await PDFDocument.create();
+  
+  for (const pdf of pdfs) {
+    const pdfData = pdf.buffer;
+    const pdfDoc = await PDFDocument.load(pdfData);
+    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  }
+
+  return await mergedPdf.save();
+}
+    
+    app.post("/presigned", async (req, res) => {
+      console.log("body jof presigned url",req.body)
         const file_name = req.body.name
         const file_type = req.body.type
         const { url, fields } = await createPresignedPost(s3, {

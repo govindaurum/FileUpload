@@ -95,7 +95,7 @@ const s3 = new S3Client({ region:REGION });
     app.use(bodyParser.json())
     
     app.post("/presigned",  async (req, res) => {
-      console.log(req.body)
+      console.log("body jof presigned url=====>",req.body)
         const file_name = req.body.name
         const file_type = req.body.type
         const { url, fields } = await createPresignedPost(s3, {

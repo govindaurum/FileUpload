@@ -102,6 +102,7 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/upload-and-merge', upload.array('pdfFiles'), async (req, res) => {
   try {
     // Merge the uploaded PDF files
+    console.log("------------=======",req)
     const mergedPdf = await mergePDFs(req.files);
 
     // Generate a signed URL for uploading the merged PDF to S3
@@ -130,8 +131,8 @@ async function mergePDFs(pdfFiles) {
 }
 
 async function generateSignedUrl() {
-  const file_name = req.body.name
-  const file_type = req.body.type
+  const file_name = "mergepdf"
+  const file_type = "appliaction/pdf"
   const { url, fields } = await createPresignedPost(s3, {
       Bucket: process.env.BUCKET,
       Key: `uploads/${file_name}`,

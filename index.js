@@ -99,97 +99,10 @@ const s3 = new S3Client({ region:REGION });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/upload-and-merge', upload.array('pdfFiles'), async (req, res) => {
-  try {
-    // Merge the uploaded PDF files
-    console.log("------------=======",req)
-    const mergedPdf = await mergePDFs(req.files);
 
-    // Generate a signed URL for uploading the merged PDF to S3
-    const signedUrl = await generateSignedUrl();
 
-    // Upload the merged PDF to S3 using the signed URL
-    await uploadToS3(signedUrl.url, mergedPdf);
 
-    // Respond with the signed URL for downloading the merged PDF
-    res.json({ signedUrl });
-  } catch (error) {
-    console.error('Error uploading and merging PDFs:', error);
-    res.status(500).json({ error: 'Error uploading and merging PDFs' });
-  }
-});
 
-async function mergePDFs(pdfFiles) {
-  const mergedPdf = await PDFDocument.create();
-  for (const pdfFile of pdfFiles) {
-    const pdfBuffer = pdfFile.buffer;
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
-    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
-  }
-  return mergedPdf.save();
-}
-
-async function generateSignedUrl() {
-  const file_name = "mergepdf"
-  const file_type = "appliaction/pdf"
-  const { url, fields } = await createPresignedPost(s3, {
-      Bucket: process.env.BUCKET,
-      Key: `uploads/${file_name}`,
-      Fields : {
-          'Content-Type': file_type
-      }
-  });
-
-return ({
-  url,
-  fields,
-}); 
-}
-
-async function uploadToS3(signedUrl, pdfBuffer) {
-  await axios.put(signedUrl, pdfBuffer, {
-    headers: {
-      'Content-Type': 'application/pdf',
-    },
-  });
-}
-
-app.post('/mergepdf', upload.array('pdf'), async (req, res) => {
-  try {
-    const pdfs = req.files;
-
-    if (!pdfs || pdfs.length < 2) {
-      return res.status(400).json({ error: 'Please upload at least two PDF files to merge.' });
-    }
-
-    const mergedPdf = await mergePDFs(pdfs);
-    
-
-      // Set the response headers for PDF download
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="merged.pdf"');
-  
-      // Send the merged PDF as a response
-      res.send(mergedPdf);
-  } catch (error) {
-    console.error('Error merging PDFs:', error);
-    return res.status(500).json({ error: 'Error merging PDFs.' });
-  }
-});
-
-async function mergePDFs(pdfs) {
-  const mergedPdf = await PDFDocument.create();
-  
-  for (const pdf of pdfs) {
-    const pdfData = pdf.buffer;
-    const pdfDoc = await PDFDocument.load(pdfData);
-    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
-  }
-
-  return await mergedPdf.save();
-}
     
     app.post("/presigned", async (req, res) => {
       console.log("body jof presigned url",req.body)
@@ -239,6 +152,7 @@ async function mergePDFs(pdfs) {
     });
     
     app.get("/list_uploads/presigned", async (req, res) => {
+      
         let bucket_data = await s3.send(new ListObjectsV2Command({
             Bucket: process.env.BUCKET,
             Prefix: 'uploads'
